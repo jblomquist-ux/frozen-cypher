@@ -3,55 +3,50 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Frozen Cipher Disk</title>
+<title>Frozen Video Cipher — Full Guides</title>
 <style>
   :root {
-    --bg1: radial-gradient(circle at 50% 10%, #1c2740 0%, #0d1220 40%, #050812 90%);
     --outer: radial-gradient(circle at 30% 30%, #6fb5ff 0%, #2a6fb1 50%, #123a6d 100%);
     --inner: radial-gradient(circle at 40% 40%, #ffffff 0%, #d9efff 45%, #b1d6ff 80%);
-    --edge: rgba(231,247,255,.8);
-    --ice-line: rgba(202,230,255,.55);
   }
+  * { box-sizing:border-box; }
   body {
     margin: 0;
     min-height: 100vh;
-    background: linear-gradient(165deg, #070b13 0%, #0a1224 32%, #0e1c34 62%, #040813 100%), 
-                url("https://images.unsplash.com/photo-1601460921116-9837fc1bece0?auto=format&fit=crop&w=1400&q=50") center/cover fixed;
-    background-blend-mode: screen;
-    display: grid;
-    place-items: center;
-    font-family: "system-ui", -apple-system, Segoe UI, Roboto, sans-serif;
-    color: #e9f5ff;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    overflow: hidden;
   }
-  .panel {
-    width: min(480px, 92vw);
-    text-align: center;
-    margin-bottom: 10px;
+  /* looping video background */
+  .bg-video {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
   }
-  .panel h1 {
-    font-size: clamp(1.3rem, 1.8vw, 1.6rem);
-    margin-bottom: .35rem;
-    text-shadow: 0 2px 8px rgba(0,0,0,.55);
-    letter-spacing: .04em;
-  }
-  .panel p {
-    font-size: .85rem;
-    opacity: .9;
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 50% 10%, rgba(7,12,20,.15) 0%, rgba(3,6,14,.65) 80%);
+    backdrop-filter: blur(0.5px);
+    z-index: -1;
   }
 
   .cipher-wrap {
     position: relative;
     width: min(430px, 80vw);
     aspect-ratio: 1/1;
+    margin: 34px auto 0;
     display: grid;
     place-items: center;
     filter: drop-shadow(0 20px 35px rgba(0,0,0,.4));
   }
 
-  /* frosted arrows */
+  /* arrows */
   .controls {
     position: absolute;
-    top: -60px;
+    top: -58px;
     display: flex;
     gap: 18px;
     z-index: 10;
@@ -69,16 +64,9 @@
     box-shadow: 0 10px 24px rgba(0,0,0,.35);
     transition: transform .12s ease, box-shadow .12s ease;
   }
-  .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(0,0,0,.4);
-  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,.4); }
   .btn:active { transform: translateY(1px); }
-  .btn svg {
-    width: 20px;
-    height: 20px;
-    stroke: #fff;
-  }
+  .btn svg { width: 20px; height: 20px; stroke: #fff; }
 
   .disk-outer {
     width: 100%;
@@ -94,14 +82,14 @@
     position: relative;
   }
 
-  /* frosty crackle overlay */
+  /* crackle overlay */
   .disk-outer::after {
     content: "";
     position: absolute;
     inset: 2%;
     background-image:
-      radial-gradient(circle, rgba(255,255,255,.14) 0 2px, transparent 3px),
-      radial-gradient(circle, rgba(255,255,255,.06) 0 1px, transparent 2px);
+      radial-gradient(circle, rgba(255,255,255,.12) 0 2px, transparent 3px),
+      radial-gradient(circle, rgba(255,255,255,.04) 0 1px, transparent 2px);
     background-size: 110px 110px, 70px 70px;
     mix-blend-mode: screen;
     pointer-events: none;
@@ -123,7 +111,7 @@
     text-shadow: 0 2px 5px rgba(6,15,26,.6);
   }
 
-  /* inner ice disk */
+  /* inner disk */
   .disk-inner {
     width: 66%;
     aspect-ratio: 1/1;
@@ -138,7 +126,6 @@
     position: relative;
     transition: transform .25s ease-out;
   }
-
   .ring.inner {
     position: absolute;
     inset: 8px;
@@ -154,7 +141,7 @@
     text-shadow: 0 1px 4px rgba(255,255,255,.6);
   }
 
-  /* Crystal pointer */
+  /* pointer crystal */
   .pointer {
     position: absolute;
     top: -26px;
@@ -182,32 +169,48 @@
     z-index: 5;
   }
 
-  /* little ice rim around inner */
-  .disk-inner::after {
-    content:"";
-    position:absolute;
-    inset:-14px;
-    border-radius:50%;
-    border:1px solid rgba(226,244,255,.35);
-    box-shadow: 0 0 14px rgba(188,222,255,.65);
+  /* alignment guides every 15 degrees (24 total) */
+  .guide-line {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 1px;
+    height: 50%;
+    background: linear-gradient(to bottom, rgba(228,243,255,0.9), rgba(228,243,255,0));
+    transform-origin: top center;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  /* dashed circle outline */
+  .alignment-ring {
+    position: absolute;
+    inset: 24px;
+    border: 1px dashed rgba(220,238,255,.45);
+    border-radius: 50%;
     pointer-events:none;
+  }
+
+  @media (max-width: 560px) {
+    .cipher-wrap { margin-top: 70px; }
   }
 </style>
 </head>
 <body>
-  <div class="panel">
-    <h1>Winter Cipher Disk</h1>
-    <p>Use the arrows to rotate the inner ring one letter at a time.</p>
-  </div>
+  <!-- looping snow video background -->
+  <video class="bg-video" autoplay muted loop playsinline>
+    <source src="SnowLoop.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div class="overlay"></div>
 
   <div class="cipher-wrap" aria-label="Rotatable winter cipher disk">
     <div class="controls">
-      <button id="leftBtn" class="btn" aria-label="Rotate inner ring left (forward) by one letter">
+      <button id="leftBtn" class="btn" aria-label="Rotate inner ring left by one letter">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M15 18l-6-6 6-6"/>
         </svg>
       </button>
-      <button id="rightBtn" class="btn" aria-label="Rotate inner ring right (back) by one letter">
+      <button id="rightBtn" class="btn" aria-label="Rotate inner ring right by one letter">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 6l6 6-6 6"/>
         </svg>
@@ -223,6 +226,10 @@
         <div id="innerRing" class="ring inner" aria-hidden="true"></div>
         <div class="center-cap" aria-hidden="true"></div>
       </div>
+
+      <!-- alignment aids -->
+      <div class="alignment-ring"></div>
+      <div id="guides"></div>
     </div>
   </div>
 
@@ -234,8 +241,9 @@
   const innerDisk = document.getElementById("innerDisk");
   const leftBtn = document.getElementById("leftBtn");
   const rightBtn = document.getElementById("rightBtn");
+  const guidesContainer = document.getElementById("guides");
 
-  // lay out outer letters
+  // outer letters
   letters.forEach((ch, i) => {
     const span = document.createElement("span");
     span.textContent = ch;
@@ -244,7 +252,7 @@
     outerRing.appendChild(span);
   });
 
-  // lay out inner letters
+  // inner letters
   letters.forEach((ch, i) => {
     const span = document.createElement("span");
     span.textContent = ch;
@@ -253,12 +261,19 @@
     innerRing.appendChild(span);
   });
 
+  // create line guides every 15 degrees (24 total)
+  for (let i = 0; i < 24; i++) {
+    const guide = document.createElement("div");
+    guide.className = "guide-line";
+    guide.style.transform = `translate(-50%, -100%) rotate(${i * 15}deg)`;
+    guidesContainer.appendChild(guide);
+  }
+
   let offset = 0;
   const stepDeg = 360 / letters.length;
 
   function updateRotation() {
-    const deg = -offset * stepDeg;
-    innerDisk.style.transform = `rotate(${deg}deg)`;
+    innerDisk.style.transform = `rotate(${-offset * stepDeg}deg)`;
   }
 
   leftBtn.addEventListener("click", () => {
@@ -271,7 +286,6 @@
     updateRotation();
   });
 
-  // Keyboard support
   window.addEventListener("keydown", (e) => {
     if (e.key === "ArrowLeft") {
       offset = (offset + 1) % letters.length;
@@ -287,4 +301,3 @@
 </script>
 </body>
 </html>
-
