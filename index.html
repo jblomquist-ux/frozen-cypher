@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Frozen Cipher Disk</title>
+<style>
+  :root {
+    --bg1: radial-gradient(circle at 50% 10%, #1c2740 0%, #0d1220 40%, #050812 90%);
+    --outer: radial-gradient(circle at 30% 30%, #6fb5ff 0%, #2a6fb1 50%, #123a6d 100%);
+    --inner: radial-gradient(circle at 40% 40%, #ffffff 0%, #d9efff 45%, #b1d6ff 80%);
+    --edge: rgba(231,247,255,.8);
+    --ice-line: rgba(202,230,255,.55);
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(165deg, #070b13 0%, #0a1224 32%, #0e1c34 62%, #040813 100%), url("https://images.unsplash.com/photo-1601460921116-9837fc1bece0?auto=format&fit=crop&w=1400&q=50") center/cover fixed;
+    background-blend-mode: screen;
+    display: grid;
+    place-items: center;
+    font-family: "system-ui", -apple-system, Segoe UI, Roboto, sans-serif;
+    color: #e9f5ff;
+  }
+  .panel {
+    width: min(480px, 92vw);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .panel h1 {
+    font-size: clamp(1.3rem, 1.8vw, 1.6rem);
+    margin-bottom: .35rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,.55);
+    letter-spacing: .04em;
+  }
+  .panel p {
+    font-size: .85rem;
+    opacity: .9;
+  }
+
+  .cipher-wrap {
+    position: relative;
+    width: min(430px, 80vw);
+    aspect-ratio: 1/1;
+    display: grid;
+    place-items: center;
+    filter: drop-shadow(0 20px 35px rgba(0,0,0,.4));
+  }
+
+  /* frosted arrows */
+  .controls {
+    position: absolute;
+    top: -60px;
+    display: flex;
+    gap: 18px;
+    z-index: 10;
+  }
+  .btn {
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(255,255,255,.28) 0%, rgba(169,212,255,.1) 50%, rgba(11,23,41,.5) 100%);
+    border: 1px solid rgba(214,236,255,.6);
+    backdrop-filter: blur(3px);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(0,0,0,.35);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0,0,0,.4);
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: #fff;
+  }
+
+  .disk-outer {
+    width: 100%;
+    aspect-ratio: 1/1;
+    background: var(--outer);
+    border-radius: 50%;
+    border: 5px solid rgba(230,244,255,.65);
+    box-shadow:
+      inset 0 0 18px rgba(255,255,255,0.35),
+      0 0 35px rgba(141,198,247,0.35);
+    display: grid;
+    place-items: center;
+    position: relative;
+  }
+
+  /* frosty crackle overlay */
+  .disk-outer::after {
+    content: "";
+    position: absolute;
+    inset: 2%;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,.14) 0 2px, transparent 3px),
+      radial-gradient(circle, rgba(255,255,255,.06) 0 1px, transparent 2px);
+    background-size: 110px 110px, 70px 70px;
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+
+  .ring {
+    position: absolute;
+    inset: 11px;
+  }
+  .ring.outer span {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform-origin: center calc(50% + 187px);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    color: #eaf6ff;
+    text-shadow: 0 2px 5px rgba(6,15,26,.6);
+  }
+
+  /* inner ice disk */
+  .disk-inner {
+    width: 66%;
+    aspect-ratio: 1/1;
+    background: var(--inner);
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,.7);
+    box-shadow:
+      inset 0 0 18px rgba(0,0,0,.08),
+      0 0 25px rgba(200,232,255,.55);
+    display: grid;
+    place-items: center;
+    position: relative;
+    transition: transform .25s ease-out;
+  }
+
+  .ring.inner {
+    position: absolute;
+    inset: 8px;
+  }
+  .ring.inner span {
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    transform-origin: center calc(50% + 120px);
+    font-size: 14px;
+    font-weight: 700;
+    color: #244a63;
+    text-shadow: 0 1px 4px rgba(255,255,255,.6);
+  }
+
+  /* Crystal pointer */
+  .pointer {
+    position: absolute;
+    top: -26px;
+    width: 0; height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 21px solid rgba(222,248,255,1);
+    filter: drop-shadow(0 4px 10px rgba(176,220,255,.65));
+  }
+  .pointer::after{
+    content:"";
+    position:absolute;
+    top:12px; left:-6px;
+    width:12px; height:6px;
+    background:radial-gradient(circle,#95d5ff 0%, rgba(149,213,255,0) 70%);
+  }
+
+  /* labels */
+  .label-top, .label-bottom {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-size: .7rem;
+    opacity: .9;
+    text-shadow: 0 1px 4px rgba(0,0,0,.7);
+  }
+  .label-top {
+    top: 18px;
+  }
+  .label-bottom {
+    bottom: 14px;
+  }
+
+  .center-cap {
+    width: 12%;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffffff 0%, #dbeeff 45%, #72a2da 100%);
+    border: 3px solid rgba(7,25,45,.45);
+    box-shadow: inset 0 0 6px rgba(0,0,0,.35);
+    z-index: 5;
+  }
+
+  /* little ice rim around inner */
+  .disk-inner::after {
+    content:"";
+    position:absolute;
+    inset:-14px;
+    border-radius:50%;
+    border:1px solid rgba(226,244,255,.35);
+    box-shadow: 0 0 14px rgba(188,222,255,.65);
+    pointer-events:none;
+  }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <h1>Winter Cipher Disk</h1>
+    <p>Use the arrows to rotate the inner (cipher) ring one letter at a time.</p>
+  </div>
+
+  <div class="cipher-wrap" aria-label="Rotatable winter cipher disk">
+    <div class="controls">
+      <button id="leftBtn" class="btn" aria-label="Rotate inner ring left (forward) by one letter">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <button id="rightBtn" class="btn" aria-label="Rotate inner ring right (back) by one letter">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 6l6 6-6 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="pointer" aria-hidden="true"></div>
+
+    <div class="disk-outer">
+      <div class="label-top">Outer: Plaintext</div>
+
+      <div id="outerRing" class="ring outer" aria-hidden="true"></div>
+
+      <div id="innerDisk" class="disk-inner" aria-live="polite">
+        <div id="innerRing" class="ring inner" aria-hidden="true"></div>
+        <div class="center-cap" aria-hidden="true"></div>
+        <div class="label-bottom">Inner: Cipher</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const outerRing = document.getElementById("outerRing");
+  const innerRing = document.getElementById("innerRing");
+  const innerDisk = document.getElementById("innerDisk");
+  const leftBtn = document.getElementById("leftBtn");
+  const rightBtn = document.getElementById("rightBtn");
+
+  // lay out outer letters
+  letters.forEach((ch, i) => {
+    const span = document.createElement("span");
+    span.textContent = ch;
+    const angle = (360 / letters.length) * i;
+    span.style.transform = `rotate(${angle}deg) translate(-50%, 0)`;
+    outerRing.appendChild(span);
+  });
+
+  // lay out inner letters
+  letters.forEach((ch, i) => {
+    const span = document.createElement("span");
+    span.textContent = ch;
+    const angle = (360 / letters.length) * i;
+    span.style.transform = `rotate(${angle}deg) translate(-50%, 0)`;
+    innerRing.appendChild(span);
+  });
+
+  let offset = 0; // 0..25
+  const stepDeg = 360 / letters.length;
+
+  function updateRotation() {
+    // rotate inner disk opposite to offset to appear shifting letters forward
+    const deg = -offset * stepDeg;
+    innerDisk.style.transform = `rotate(${deg}deg)`;
+    // If you wanted to show the current mapping, you could:
+    // const outerTop = letters[0];
+    // const innerTop = letters[offset % 26];
+    // console.log(`${outerTop} -> ${innerTop}`);
+  }
+
+  leftBtn.addEventListener("click", () => {
+    offset = (offset + 1) % letters.length;
+    updateRotation();
+  });
+
+  rightBtn.addEventListener("click", () => {
+    offset = (offset - 1 + letters.length) % letters.length;
+    updateRotation();
+  });
+
+  // Keyboard support
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") {
+      offset = (offset + 1) % letters.length;
+      updateRotation();
+    } else if (e.key === "ArrowRight") {
+      offset = (offset - 1 + letters.length) % letters.length;
+      updateRotation();
+    }
+  });
+
+  updateRotation();
+})();
+</script>
+</body>
+</html>
