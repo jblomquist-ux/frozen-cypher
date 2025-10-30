@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Frozen Video Cipher — Centered</title>
+<title>Frozen Video Cipher — Closer Rings</title>
 <style>
   :root {
     --outer: radial-gradient(circle at 30% 30%, #6fb5ff 0%, #2a6fb1 50%, #123a6d 100%);
@@ -16,7 +16,8 @@
     font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     overflow: hidden;
   }
-  /* video bg */
+
+  /* looping background */
   .bg-video {
     position: fixed;
     inset: 0;
@@ -33,7 +34,7 @@
     z-index: -1;
   }
 
-  /* center the cipher on the page */
+  /* page centering */
   .page {
     width: 100vw;
     height: 100vh;
@@ -78,11 +79,10 @@
   .btn:active { transform: translateY(1px); }
   .btn svg { width: 20px; height: 20px; stroke: #fff; }
 
-  /* outer disk (centered) */
+  /* outer disk */
   .disk-outer {
     position: absolute;
     inset: 0;
-    margin: auto;
     width: 100%;
     height: 100%;
     background: var(--outer);
@@ -93,10 +93,9 @@
       0 0 35px rgba(141,198,247,0.35);
     display: grid;
     place-items: center;
-    overflow: visible;
   }
 
-  /* ice crackle */
+  /* frost overlay */
   .disk-outer::after {
     content: "";
     position: absolute;
@@ -110,15 +109,12 @@
   }
 
   /* rings */
-  .ring {
-    position: absolute;
-    inset: 11px;
-  }
+  .ring { position: absolute; inset: 11px; }
   .ring.outer span {
     position: absolute;
     top: 5px;
     left: 50%;
-    transform-origin: center calc(50% + 187px); /* matches outer size */
+    transform-origin: center calc(50% + 187px);
     font-size: 15px;
     font-weight: 600;
     letter-spacing: .04em;
@@ -126,11 +122,10 @@
     text-shadow: 0 2px 5px rgba(6,15,26,.6);
   }
 
-  /* inner disk (centered) */
+  /* inner disk – now 74% of size (previously 66%) */
   .disk-inner {
     position: absolute;
-    inset: 17%;
-    margin: auto;
+    inset: 13%;
     background: var(--inner);
     border-radius: 50%;
     border: 4px solid rgba(255,255,255,.7);
@@ -141,6 +136,7 @@
     place-items: center;
     transition: transform .25s ease-out;
   }
+
   .ring.inner {
     position: absolute;
     inset: 8px;
@@ -149,14 +145,14 @@
     position: absolute;
     top: 4px;
     left: 50%;
-    transform-origin: center calc(50% + 120px);
+    transform-origin: center calc(50% + 132px); /* slightly wider radius to match closer alignment */
     font-size: 14px;
     font-weight: 700;
     color: #244a63;
     text-shadow: 0 1px 4px rgba(255,255,255,.6);
   }
 
-  /* pointer crystal (top center) */
+  /* pointer */
   .pointer {
     position: absolute;
     top: -30px;
@@ -169,7 +165,7 @@
     filter: drop-shadow(0 4px 10px rgba(176,220,255,.65));
     z-index: 20;
   }
-  .pointer::after{
+  .pointer::after {
     content:"";
     position:absolute;
     top:12px; left:-6px;
@@ -187,7 +183,7 @@
     z-index: 5;
   }
 
-  /* alignment ring (same center) */
+  /* alignment ring */
   .alignment-ring {
     position: absolute;
     inset: 24px;
@@ -196,7 +192,7 @@
     pointer-events:none;
   }
 
-  /* guides: all from center now */
+  /* guides from center */
   .guides {
     position: absolute;
     inset: 0;
@@ -209,7 +205,7 @@
     width: 1px;
     height: 50%;
     background: linear-gradient(to bottom, rgba(228,243,255,0.9), rgba(228,243,255,0));
-    transform-origin: 50% 0%; /* pivot from center */
+    transform-origin: 50% 0%;
     opacity: 0.35;
   }
 
@@ -220,6 +216,7 @@
 </style>
 </head>
 <body>
+  <!-- looping snow video -->
   <video class="bg-video" autoplay muted loop playsinline>
     <source src="SnowLoop.mp4" type="video/mp4">
   </video>
@@ -266,7 +263,7 @@
   const rightBtn = document.getElementById("rightBtn");
   const guidesBox = document.getElementById("guides");
 
-  // Place outer letters (locked ring)
+  // outer letters
   letters.forEach((ch, i) => {
     const span = document.createElement("span");
     span.textContent = ch;
@@ -275,7 +272,7 @@
     outerRing.appendChild(span);
   });
 
-  // Place inner letters (rotating ring)
+  // inner letters
   letters.forEach((ch, i) => {
     const span = document.createElement("span");
     span.textContent = ch;
@@ -284,9 +281,8 @@
     innerRing.appendChild(span);
   });
 
-  // Create 24 central guides, 15° apart
-  const guideCount = 24;
-  for (let i = 0; i < guideCount; i++) {
+  // 24 guides
+  for (let i = 0; i < 24; i++) {
     const g = document.createElement("div");
     g.className = "guide-line";
     g.style.transform = `translate(-50%, -100%) rotate(${i * 15}deg)`;
@@ -297,7 +293,7 @@
   const stepDeg = 360 / letters.length;
 
   function updateRotation() {
-    innerDisk.style.transform = `translateZ(0) rotate(${-offset * stepDeg}deg)`;
+    innerDisk.style.transform = `rotate(${-offset * stepDeg}deg)`;
   }
 
   leftBtn.addEventListener("click", () => {
@@ -310,7 +306,6 @@
     updateRotation();
   });
 
-  // keyboard support
   window.addEventListener("keydown", (e) => {
     if (e.key === "ArrowLeft") {
       offset = (offset + 1) % letters.length;
@@ -321,7 +316,6 @@
     }
   });
 
-  // initial
   updateRotation();
 })();
 </script>
